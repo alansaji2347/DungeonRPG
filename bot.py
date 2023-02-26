@@ -1,6 +1,7 @@
 import random
 import discord
 import responses
+import asyncio
 
 
 async def send_message(message, user_message, is_private):
@@ -15,7 +16,7 @@ async def send_message(message, user_message, is_private):
 
 
 def run_discord_bot():
-    TOKEN = 'add bot token here'
+    TOKEN = 'enter token'
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents=intents)
@@ -35,10 +36,34 @@ def run_discord_bot():
 
         print(f'{username} sent a message in {channel}: {user_message}')
 
-        if user_message[0] == '?':
+        if user_message[0] == '?':  # If the message starts with a question mark
             user_message = user_message[1:]  # "?Help" -> "Help", i.e., ignores the question mark
             await send_message(message, user_message, is_private=True)
         else:
             await send_message(message, user_message, is_private=False)
+
+        # RPG stuff
+        if message.content.startswith('!fight'):
+            player_hp = 100
+            enemy_hp = 100
+            player_attack = 10
+            enemy_attack = 10
+
+            while True:
+                # player's turn
+                player_damage = random.randint(1, player_attack)
+                enemy_hp -= player_damage
+                await message.channel.send(f'You hit the enemy for {player_damage} damage!')
+                if enemy_hp <= 0:
+                    await message.channel.send('You win!')
+                    break
+
+                # enemy's turn
+                enemy_damage = random.randint(1, enemy_attack)
+                player_hp -= enemy_damage
+                await message.channel.send(f'The enemy hit you for {enemy_damage} damage!')
+                if player_hp <= 0:
+                    await message.channel.send('You lose!')
+                    break
 
     client.run(TOKEN)
