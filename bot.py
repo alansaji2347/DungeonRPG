@@ -36,7 +36,7 @@ users = {
 
 
 def run_discord_bot():
-    TOKEN = 'MTA3NTg0NjQ5MTE4MjIyMzQ5MA.GS5obc.Qu5dyK6uVeE99gJFopkbtxDH209TdXWyWNaRMM'
+    TOKEN = 'enter token here'
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents=intents)
