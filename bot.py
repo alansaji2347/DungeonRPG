@@ -1,7 +1,6 @@
 import random
 import discord
 import responses
-import asyncio
 
 
 async def send_message(message, user_message, is_private):
@@ -15,8 +14,29 @@ async def send_message(message, user_message, is_private):
         print(e)
 
 
+ranks = {
+    'F': 0,
+    'D': 1,
+    'C': 3,
+    'B': 4,
+    'A': 10,
+    'S': 15,
+}
+
+users = {
+    'Dark#6189': {
+        'rank': 'F',
+        'wins': 0
+    },
+    'user2': {
+        'rank': 'F',
+        'wins': 0
+    },
+}
+
+
 def run_discord_bot():
-    TOKEN = 'enter token'
+    TOKEN = 'MTA3NTg0NjQ5MTE4MjIyMzQ5MA.GS5obc.Qu5dyK6uVeE99gJFopkbtxDH209TdXWyWNaRMM'
     intents = discord.Intents.default()
     intents.message_content = True
     client = discord.Client(intents=intents)
@@ -42,12 +62,32 @@ def run_discord_bot():
         else:
             await send_message(message, user_message, is_private=False)
 
+        # Check Rank
+        if user_message == '!rank':
+            await message.channel.send(f'Your rank is {users[username]["rank"]}')
+
+        # Check Wins
+        if user_message == '!wins':
+            await message.channel.send(f'You have {users[username]["wins"]} wins')
+
         # RPG stuff
         if message.content.startswith('!fight'):
+            username = str(message.author)
+
+            # If the user is new, initialize their rank to F and wins to 0
+            if username not in users:
+                users[username] = {
+                    'rank': 'F',
+                    'wins': 0
+                }
+
             player_hp = 100
-            enemy_hp = 100
+            enemy_hp = 10
             player_attack = 10
             enemy_attack = 10
+
+            # Store the previous rank before the fight
+            previous_rank = users[username]['rank']
 
             while True:
                 # player's turn
@@ -56,6 +96,17 @@ def run_discord_bot():
                 await message.channel.send(f'You hit the enemy for {player_damage} damage!')
                 if enemy_hp <= 0:
                     await message.channel.send('You win!')
+                    users[username]['wins'] += 1
+
+                    # Check if the user qualifies for a promotion
+                    for rank in sorted(ranks, key=ranks.get, reverse=True):
+                        if users[username]['wins'] >= ranks[rank]:
+                            if rank != users[username]['rank']:
+                                users[username]['rank'] = rank
+                                await message.channel.send(
+                                    f'Congratulations, {username}! You have been promoted to rank {rank}!')
+                            break
+
                     break
 
                 # enemy's turn
@@ -65,5 +116,8 @@ def run_discord_bot():
                 if player_hp <= 0:
                     await message.channel.send('You lose!')
                     break
+
+            # Update the previous rank for the user
+            users[username]['previous_rank'] = previous_rank
 
     client.run(TOKEN)
